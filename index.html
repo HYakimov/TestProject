@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container">
+        <form id="form">
+            <div>
+                <h2>Form</h2>
+            </div>
+            <div>
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" required>
+            </div>
+            <div>
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" required>
+            </div>
+            <div>
+                <label for="age">Age</label>
+                <input type="text" id="age" required>
+            </div>
+            <div>
+                <label for="score">Score</label>
+                <input type="text" id="score" required>
+            </div>
+            <div>
+                <button id="submit"> Submit </button>
+            </div>
+        </form>
+
+        <div class="table-container">
+            <h2>Table</h2>
+            <div class="table-wrapper">
+                <table id="table">
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Age</th>
+                        <th>Score</th>
+                    </tr>
+                </table>
+            </div>
+            <div class="btn-container">
+                <button class="table-button" id="sortByAge"> Sort by Age </button>
+                <button class="table-button" id="sortByScore"> Sort by Score </button>
+                <button class="table-button" id="clearTable"> Clear Table </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>

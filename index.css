@@ -1,0 +1,127 @@
+body {
+    background-image: url(b.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow-y: auto; /* Enable vertical scrolling for the entire page */
+}
+
+.container {
+    display: flex;
+    flex-direction: row; /* Arrange form and table side by side */
+    align-items: flex-start; /* Align items to the top */
+    justify-content: center; /* Center the content */
+    font-family: Arial, sans-serif;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+form, .table-container {
+    margin: 10px;
+    padding: 20px;
+    border-radius: 15px;
+    width: 45%;
+    max-width: 400px;
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: rgba(253, 253, 253, 0.6);
+    box-shadow: 0 0 10px hsla(235, 88%, 65%, 0.2);
+    backdrop-filter: blur(15px); /* Blur effect for a frosted glass look */
+    transition: box-shadow 0.3s ease;
+}
+
+form:hover, .table-container:hover {
+    box-shadow: 0 0 20px rgba(114, 61, 240, 0.8); /* Glow effect on hover */
+}
+
+form h2, .table-container h2 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+form div, .table-container div {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: border-color 0.3s ease;
+}
+
+form input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+}
+
+th, td {
+    border-radius: 5px;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: rgba(242, 242, 242, 0.9);
+}
+
+.table-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.btn-container {
+    margin: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.table-button {
+    margin-right: 5px;
+}
+
+.table-wrapper {
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    margin-top: 10px;
+}
