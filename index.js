@@ -14,6 +14,7 @@ $(document).ready(function () {
         }
     }
 
+    const loaderContainer = $('#loader')[0];
     let tableData = [];
 
     setInterval(updateTableDataFromServer, 10000);
@@ -39,8 +40,7 @@ $(document).ready(function () {
     }
 
     function updateTableDataFromServer() {
-        $('#table tr:gt(0)').remove();
-        tableData = [];
+        const loader = createLoader();
 
         fetch('http://localhost:3000/data')
             .then(response => {
@@ -51,13 +51,17 @@ $(document).ready(function () {
             })
             .then(data => {
                 $('#table tr:gt(0)').remove();
+                tableData = [];
+                
                 data.forEach(item => {
                     const data = new TableData(item.firstName, item.lastName, item.age, item.score, item.id);
                     tableData.push(data);
                 });
                 displayTable();
+                stopLoader(loader);
             })
             .catch(error => {
+                stopLoader(loader);
                 console.error('There was a problem with the fetch operation:', error);
             });
     }
@@ -103,6 +107,8 @@ $(document).ready(function () {
     }
 
     function fetchSortedData(sortBy) {
+        const loader = createLoader();
+
         fetch(`http://localhost:3000/data?sortBy=${sortBy}`)
             .then(response => {
                 if (!response.ok) {
@@ -117,8 +123,10 @@ $(document).ready(function () {
                     tableData.push(data);
                 });
                 displayTable();
+                stopLoader(loader);
             })
             .catch(error => {
+                stopLoader(loader);
                 console.error('There was a problem with the fetch operation:', error);
             });
     }
@@ -128,6 +136,19 @@ $(document).ready(function () {
         const validScore = !isNaN(parseFloat(score)) && score > 0 && score <= 100;
 
         return (firstName !== '' && lastName !== '' && validAge && validScore);
+    }
+
+    function createLoader() {
+        $('#table tr:gt(0)').remove();
+        $('.btn-container').addClass('hidden');
+        $('.table-loader-container').css('margin-top', '200px');
+        return new Spinner().spin(loaderContainer);
+    }
+
+    function stopLoader(loader) {
+        loader.stop();
+        $('.btn-container').removeClass('hidden');
+        $('.table-loader-container').css('margin-top', '0px');
     }
 
     function displayTable() {
