@@ -14,7 +14,7 @@ $(document).ready(function () {
         }
     }
 
-    const loaderContainer = $('#loader')[0];
+    const tableLoader = $('#tableLoader')[0];
     let tableData = [];
 
     setInterval(updateTableDataFromServer, 10000);
@@ -40,7 +40,7 @@ $(document).ready(function () {
     }
 
     function updateTableDataFromServer() {
-        const loader = createLoader();
+        const loader = createTableLoader();
 
         fetch('http://localhost:3000/data')
             .then(response => {
@@ -58,15 +58,17 @@ $(document).ready(function () {
                     tableData.push(data);
                 });
                 displayTable();
-                stopLoader(loader);
+                stopTableLoader(loader);
             })
             .catch(error => {
-                stopLoader(loader);
+                stopTableLoader(loader);
                 console.error('There was a problem with the fetch operation:', error);
             });
     }
 
     function deleteSpecificDataFromServer(id) {
+        const loader = createTableLoader();
+
         fetch(`http://localhost:3000/data/${id}`, {
             method: 'DELETE',
             headers: {
@@ -77,16 +79,20 @@ $(document).ready(function () {
                 if (response.ok) {
                     tableData = tableData.filter(item => item.id !== id);
                     displayTable();
+                    stopTableLoader(loader);
                 } else {
                     throw new Error('Network response was not ok');
                 }
             })
             .catch(error => {
+                stopTableLoader(loader)
                 console.error('Error:', error);
             });
     }
 
     function deleteDataFromServer() {
+        const loader = createTableLoader();
+
         fetch('http://localhost:3000/data', {
             method: 'DELETE',
             headers: {
@@ -97,17 +103,19 @@ $(document).ready(function () {
                 if (response.ok) {
                     $('#table tr:gt(0)').remove();
                     tableData = [];
+                    stopTableLoader(loader);
                 } else {
                     throw new Error('Network response was not ok');
                 }
             })
             .catch(error => {
+                stopTableLoader(loader);
                 console.error('There was a problem with your fetch operation:', error);
             });
     }
 
     function fetchSortedData(sortBy) {
-        const loader = createLoader();
+        const loader = createTableLoader();
 
         fetch(`http://localhost:3000/data?sortBy=${sortBy}`)
             .then(response => {
@@ -123,10 +131,10 @@ $(document).ready(function () {
                     tableData.push(data);
                 });
                 displayTable();
-                stopLoader(loader);
+                stopTableLoader(loader);
             })
             .catch(error => {
-                stopLoader(loader);
+                stopTableLoader(loader);
                 console.error('There was a problem with the fetch operation:', error);
             });
     }
@@ -138,14 +146,14 @@ $(document).ready(function () {
         return (firstName !== '' && lastName !== '' && validAge && validScore);
     }
 
-    function createLoader() {
+    function createTableLoader() {
         $('#table tr:gt(0)').remove();
         $('.btn-container').addClass('hidden');
         $('.table-loader-container').css('margin-top', '200px');
-        return new Spinner().spin(loaderContainer);
+        return new Spinner().spin(tableLoader);
     }
 
-    function stopLoader(loader) {
+    function stopTableLoader(loader) {
         loader.stop();
         $('.btn-container').removeClass('hidden');
         $('.table-loader-container').css('margin-top', '0px');
