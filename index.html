@@ -3,7 +3,7 @@
 
 <head>
     <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
@@ -36,8 +36,38 @@
             </div>
         </form>
 
+        <form id="editForm" class="hidden">
+            <div>
+                <h2>Edit Form</h2>
+            </div>
+            <div>
+                <label for="firstName">First Name</label>
+                <input type="text" id="editFirstName">
+            </div>
+            <div>
+                <label for="lastName">Last Name</label>
+                <input type="text" id="editLastName">
+            </div>
+            <div>
+                <label for="age">Age</label>
+                <input type="text" id="editAge">
+            </div>
+            <div>
+                <label for="score">Score</label>
+                <input type="text" id="editScore">
+            </div>
+            <div class="form-btn-container">
+                <button class="table-button" id="editSubmit"> Submit </button>
+                <button class="table-button" id="editCancel"> Cancel </button>
+            </div>
+        </form>
+
+        <div id="overlay" class="hidden"></div>
+
         <div class="table-container">
-            <h2>Table</h2>
+            <div>
+                <h2>Table</h2>
+            </div>
             <div class="table-wrapper">
                 <table id="table">
                     <tr>
@@ -49,6 +79,7 @@
                 </table>
             </div>
             <div class="btn-container">
+                <button class="table-button" id="loadTable"> Load Table </button>
                 <button class="table-button" id="sortByAge"> Sort by Age </button>
                 <button class="table-button" id="sortByScore"> Sort by Score </button>
                 <button class="table-button" id="clearTable"> Clear Table </button>
