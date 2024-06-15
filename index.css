@@ -7,7 +7,6 @@ body {
     padding: 0;
     height: 100vh;
     overflow-y: auto;
-    /* Enable vertical scrolling for the entire page */
 }
 
 .container {
@@ -35,7 +34,6 @@ edit-form,
     background-color: rgba(253, 253, 253, 0.6);
     box-shadow: 0 0 10px hsla(235, 88%, 65%, 0.2);
     backdrop-filter: blur(15px);
-    /* Blur effect for a frosted glass look */
     transition: box-shadow 0.3s ease;
 }
 
@@ -43,7 +41,6 @@ form:hover,
 edit-form:hover,
 .table-container:hover {
     box-shadow: 0 0 20px rgba(114, 61, 240, 0.8);
-    /* Glow effect on hover */
 }
 
 h2 {
@@ -133,7 +130,7 @@ th {
     margin-right: 5px;
 }
 
-.table-wrapper {    
+.table-wrapper {
     max-height: 320px;
     overflow-y: auto;
 }
@@ -145,15 +142,13 @@ th {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .editFormPossition {
     position: fixed;
     top: 20px;
     left: 250px;
-    width: 100%;
-    height: 100%;
     z-index: 1001;
 }
 
@@ -170,4 +165,33 @@ th {
 button[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.pagination {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pagination-number,
+.pagination-button {
+    font-size: 20px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.pagination-number:hover,
+.pagination-button:not(.disabled):hover {
+    background: #ffffff8f;
+}
+
+.pagination-number.active {
+    color: #fff;
+    background: #0085b6;
+}
+
+#pageInput {
+    width: 50px;
 }

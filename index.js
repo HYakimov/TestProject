@@ -15,10 +15,14 @@ $(document).ready(function () {
     }
 
     const tableLoader = $('#tableLoader')[0];
+    const limit = 3;
+    let totalCount = 0;
+    let currentPage = 1;
     let tableData = [];
-    let currentEditId = null;
+    let currentEditId;
+    let currentSortBy;
 
-    setInterval(updateTableDataFromServer, 100000);
+    setInterval(fetchDataFromServer(1), 100000);
 
     function sendTableDataToServer(data) {
         const loader = createTableLoader();
@@ -35,7 +39,7 @@ $(document).ready(function () {
                 stopTableLoader(loader);
                 $('#submit').prop('disabled', false);
                 if (response.ok) {
-                    updateTableDataFromServer();
+                    fetchDataFromServer(currentPage);
                 } else {
                     throw new Error('Network response was not ok');
                 }
@@ -47,11 +51,18 @@ $(document).ready(function () {
             });
     }
 
-    function updateTableDataFromServer() {
+    function fetchDataFromServer(page, sortBy = '') {
         const loader = createTableLoader();
         $('#submit').prop('disabled', true);
+        let url = `http://localhost:3000/data?page=${page}&limit=${limit}`;
+        if (sortBy) {
+            url += `&sortBy=${sortBy}`;
+            currentSortBy = sortBy;
+        } else if (currentSortBy) {
+            url += `&sortBy=${currentSortBy}`;  // Use current sorting criteria if available
+        }
 
-        fetch('http://localhost:3000/data')
+        fetch(url)
             .then(response => {
                 stopTableLoader(loader);
                 $('#submit').prop('disabled', false);
@@ -60,21 +71,31 @@ $(document).ready(function () {
                 }
                 return response.json();
             })
-            .then(data => {
+            .then(response => {
                 $('#table tr:gt(0)').remove();
                 tableData = [];
+                totalCount = response.totalCount;
 
-                data.forEach(item => {
+                response.data.forEach(item => {
                     const data = new TableData(item.firstName, item.lastName, item.age, item.score, item.id);
                     tableData.push(data);
                 });
                 displayTable();
+                updatePaginationControls(page);
             })
             .catch(error => {
                 stopTableLoader(loader);
                 $('#submit').prop('disabled', false);
                 console.error('There was a problem with the fetch operation:', error);
             });
+    }
+
+    function updatePaginationControls(page) {
+        currentPage = page;
+        $('#pageInput').val(currentPage);
+        $('#totalPages').text(Math.ceil(totalCount / limit));
+        $('#prevPage').prop('disabled', currentPage === 1);
+        $('#nextPage').prop('disabled', currentPage * limit >= totalCount);
     }
 
     function deleteSpecificDataFromServer(id) {
@@ -131,36 +152,6 @@ $(document).ready(function () {
             });
     }
 
-    function fetchSortedData(sortBy) {
-        const loader = createTableLoader();
-        $('#submit').prop('disabled', true);
-
-        fetch(`http://localhost:3000/data?sortBy=${sortBy}`)
-            .then(response => {
-                stopTableLoader(loader);
-                $('#submit').prop('disabled', false);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                tableData = [];
-                data.forEach(item => {
-                    const data = new TableData(item.firstName, item.lastName, item.age, item.score, item.id);
-                    tableData.push(data);
-                });
-                displayTable();
-                stopTableLoader(loader);
-                $('#submit').prop('disabled', false);
-            })
-            .catch(error => {
-                stopTableLoader(loader);
-                $('#submit').prop('disabled', false);
-                console.error('There was a problem with the fetch operation:', error);
-            });
-    }
-
     function updateData(data, id) {
         const loader = createTableLoader();
         $('#submit').prop('disabled', true);
@@ -176,7 +167,7 @@ $(document).ready(function () {
                 stopTableLoader(loader);
                 $('#submit').prop('disabled', false);
                 if (response.ok) {
-                    updateTableDataFromServer();
+                    fetchDataFromServer(currentPage);
                 } else {
                     throw new Error('Network response was not ok');
                 }
@@ -198,6 +189,7 @@ $(document).ready(function () {
     function createTableLoader() {
         $('#table tr:gt(0)').remove();
         $('.btn-container').addClass('hidden');
+        $('.pagination').addClass('hidden');
         $('.table-loader-container').css('margin-top', '200px');
         return new Spinner().spin(tableLoader);
     }
@@ -205,6 +197,7 @@ $(document).ready(function () {
     function stopTableLoader(loader) {
         loader.stop();
         $('.btn-container').removeClass('hidden');
+        $('.pagination').removeClass('hidden');
         $('.table-loader-container').css('margin-top', '0px');
     }
 
@@ -301,8 +294,32 @@ $(document).ready(function () {
         $('#editForm').removeClass('editFormPossition');
     });
 
+    $('#goToPage').on('click', function() {
+        let page = parseInt($('#pageInput').val());
+        if (page >= 1 && page <= Math.ceil(totalCount / limit)) {
+            fetchDataFromServer(page, currentSortBy);
+        } else {
+            alert(`Please enter a page number between 1 and ${Math.ceil(totalCount / limit)}.`);
+        }
+    });
+
+    $('#pageInput').keypress(function (e) {
+        if (e.which === 13) {  // Enter key pressed
+            $('#goToPage').click();
+        }
+    });
+
+    $('#prevPage').click(function () {
+        fetchDataFromServer(currentPage - 1);
+    });
+
+    $('#nextPage').click(function () {
+        fetchDataFromServer(currentPage + 1);
+    });
+
     $('#loadTable').click(function () {
-        updateTableDataFromServer();
+        currentSortBy = '';
+        fetchDataFromServer(1);
     });
 
     $('#clearTable').click(function () {
@@ -310,10 +327,10 @@ $(document).ready(function () {
     });
 
     $('#sortByAge').click(function () {
-        fetchSortedData('age');
+        fetchDataFromServer(1, 'age');
     });
 
     $('#sortByScore').click(function () {
-        fetchSortedData('score');
+        fetchDataFromServer(1, 'score');
     });
 });
