@@ -19,8 +19,8 @@ $(document).ready(function () {
     let totalCount = 0;
     let currentPage = 1;
     let tableData = [];
-    let currentEditId;
     let currentSortBy;
+    let currentEditId;
 
     setInterval(fetchDataFromServer(1), 100000);
 
@@ -210,8 +210,8 @@ $(document).ready(function () {
             <td>${item.lastName}</td>
             <td>${item.age}</td>
             <td>${item.score}</td>
-            <td><i data-entry-id=${item.id} class="fa-solid fa-pencil" style="cursor: pointer;"></i></td>
-            <td><i data-entry-id=${item.id} class="fas fa-times" style="cursor: pointer;"></i></td>
+            <td><i data-id="${item.id}" class="fa-solid fa-pencil" style="cursor: pointer;"></i></td>
+            <td><i data-id="${item.id}" class="fas fa-times" style="cursor: pointer;"></i></td>
         </tr>
         `;
             $('#table').append(newRow);
@@ -226,75 +226,51 @@ $(document).ready(function () {
     }
 
     $('#form').submit(function (event) {
-        event.preventDefault(); // Prevent the form from submitting in the traditional way
-
+        event.preventDefault();
         const firstName = $('#firstName').val();
         const lastName = $('#lastName').val();
         const age = $('#age').val();
         const score = $('#score').val();
 
-        if (validateInput(firstName, lastName, age, score)) {
-            sendTableDataToServer(new TableData(firstName, lastName, age, score));
-            $('#form')[0].reset();
-            $('#submit').prop('disabled', true);
-        } else {
-            alert("Minimum age is 18. Score is between 1 and 100.");
+        if (!validateInput(firstName, lastName, age, score)) {
+            alert("Minimum age is 18. Score must be between 1 and 100.");
+            return;
         }
+
+        if (currentEditId != null) {
+            updateData(new TableData(firstName, lastName, age, score), currentEditId);
+            currentEditId = null;
+        } else {
+            sendTableDataToServer(new TableData(firstName, lastName, age, score));
+        }
+        
+        $('#form')[0].reset();
+        $('#submit').prop('disabled', true);
     });
 
     $('#table').on('click', '.fa-times', function () {
-        const id = $(this).data('entry-id');
+        const id = $(this).data('id');
         deleteSpecificDataFromServer(id);
     });
 
     $('#table').on('click', '.fa-pencil', function () {
-        currentEditId = $(this).data('entry-id');
-        $('#editForm').removeClass('hidden');
-        $('#overlay').removeClass('hidden');
-        $('#editForm').addClass('editFormPossition');
-    });
-
-    $('#editForm').submit(function (event) {
+        currentEditId = $(this).data('id');
         const currentData = tableData.find(data => data.id === currentEditId);
-
-        event.preventDefault();
-        $('#editForm').addClass('hidden');
-        $('#overlay').addClass('hidden');
-        $('#editForm').removeClass('editFormPossition');
-
-        let firstName = $('#editFirstName').val();
-        let lastName = $('#editLastName').val();
-        let age = $('#editAge').val();
-        let score = $('#editScore').val();
-
-        if (firstName == '' && lastName == '' && age == '' && score == '') {
-            return;
-        }
-
-        firstName = firstName !== '' ? firstName : currentData.firstName;
-        lastName = lastName !== '' ? lastName : currentData.lastName;
-        age = age !== '' ? age : currentData.age;
-        score = score !== '' ? score : currentData.score;
-
-        if (!validateInput(firstName, lastName, age, score)) {
-            alert("Minimum age is 18. Score is between 1 and 100.");
-            $('#editForm')[0].reset();
-            return;
-        }
-
-        const editData = new TableData(firstName, lastName, age, score);
-        $('#editForm')[0].reset();
-        updateData(editData, currentEditId);
+        $('#firstName').val(currentData.firstName);
+        $('#lastName').val(currentData.lastName);
+        $('#age').val(currentData.age);
+        $('#score').val(currentData.score);
     });
 
     $('#editCancel').click(function (event) {
+        $('#firstName').val('')
+        $('#lastName').val('');
+        $('#age').val('');
+        $('#score').val('');
         event.preventDefault();
-        $('#editForm').addClass('hidden');
-        $('#overlay').addClass('hidden');
-        $('#editForm').removeClass('editFormPossition');
     });
 
-    $('#goToPage').on('click', function() {
+    $('#goToPage').on('click', function () {
         let page = parseInt($('#pageInput').val());
         if (page >= 1 && page <= Math.ceil(totalCount / limit)) {
             fetchDataFromServer(page, currentSortBy);
