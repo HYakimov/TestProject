@@ -15,10 +15,14 @@ $(document).ready(function () {
     }
 
     const tableLoader = $('#tableLoader')[0];
+    const limit = 4;
+    let totalCount = 0;
+    let currentPage = 1;
     let tableData = [];
-    let currentEditId = null;
+    let currentSortBy;
+    let currentEditId;
 
-    setInterval(updateTableDataFromServer, 100000);
+    setInterval(fetchDataFromServer(1), 100000);
 
     function sendTableDataToServer(data) {
         const loader = createTableLoader();
@@ -35,7 +39,7 @@ $(document).ready(function () {
                 stopTableLoader(loader);
                 $('#submit').prop('disabled', false);
                 if (response.ok) {
-                    updateTableDataFromServer();
+                    fetchDataFromServer(currentPage);
                 } else {
                     throw new Error('Network response was not ok');
                 }
@@ -47,11 +51,18 @@ $(document).ready(function () {
             });
     }
 
-    function updateTableDataFromServer() {
+    function fetchDataFromServer(page, sortBy = '') {
         const loader = createTableLoader();
         $('#submit').prop('disabled', true);
+        let url = `http://localhost:3000/data?page=${page}&limit=${limit}`;
+        if (sortBy) {
+            url += `&sortBy=${sortBy}`;
+            currentSortBy = sortBy;
+        } else if (currentSortBy) {
+            url += `&sortBy=${currentSortBy}`;
+        }
 
-        fetch('http://localhost:3000/data')
+        fetch(url)
             .then(response => {
                 stopTableLoader(loader);
                 $('#submit').prop('disabled', false);
@@ -60,21 +71,31 @@ $(document).ready(function () {
                 }
                 return response.json();
             })
-            .then(data => {
+            .then(response => {
                 $('#table tr:gt(0)').remove();
                 tableData = [];
+                totalCount = response.totalCount;
 
-                data.forEach(item => {
+                response.data.forEach(item => {
                     const data = new TableData(item.firstName, item.lastName, item.age, item.score, item.id);
                     tableData.push(data);
                 });
                 displayTable();
+                updatePaginationControls(page);
             })
             .catch(error => {
                 stopTableLoader(loader);
                 $('#submit').prop('disabled', false);
                 console.error('There was a problem with the fetch operation:', error);
             });
+    }
+
+    function updatePaginationControls(page) {
+        currentPage = page;
+        $('#pageInput').val(currentPage);
+        $('#totalPages').text(Math.ceil(totalCount / limit));
+        $('#prevPage').prop('disabled', currentPage === 1);
+        $('#nextPage').prop('disabled', currentPage * limit >= totalCount);
     }
 
     function deleteSpecificDataFromServer(id) {
@@ -131,36 +152,6 @@ $(document).ready(function () {
             });
     }
 
-    function fetchSortedData(sortBy) {
-        const loader = createTableLoader();
-        $('#submit').prop('disabled', true);
-
-        fetch(`http://localhost:3000/data?sortBy=${sortBy}`)
-            .then(response => {
-                stopTableLoader(loader);
-                $('#submit').prop('disabled', false);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                tableData = [];
-                data.forEach(item => {
-                    const data = new TableData(item.firstName, item.lastName, item.age, item.score, item.id);
-                    tableData.push(data);
-                });
-                displayTable();
-                stopTableLoader(loader);
-                $('#submit').prop('disabled', false);
-            })
-            .catch(error => {
-                stopTableLoader(loader);
-                $('#submit').prop('disabled', false);
-                console.error('There was a problem with the fetch operation:', error);
-            });
-    }
-
     function updateData(data, id) {
         const loader = createTableLoader();
         $('#submit').prop('disabled', true);
@@ -176,7 +167,7 @@ $(document).ready(function () {
                 stopTableLoader(loader);
                 $('#submit').prop('disabled', false);
                 if (response.ok) {
-                    updateTableDataFromServer();
+                    fetchDataFromServer(currentPage);
                 } else {
                     throw new Error('Network response was not ok');
                 }
@@ -198,6 +189,7 @@ $(document).ready(function () {
     function createTableLoader() {
         $('#table tr:gt(0)').remove();
         $('.btn-container').addClass('hidden');
+        $('.pagination').addClass('hidden');
         $('.table-loader-container').css('margin-top', '200px');
         return new Spinner().spin(tableLoader);
     }
@@ -205,6 +197,7 @@ $(document).ready(function () {
     function stopTableLoader(loader) {
         loader.stop();
         $('.btn-container').removeClass('hidden');
+        $('.pagination').removeClass('hidden');
         $('.table-loader-container').css('margin-top', '0px');
     }
 
@@ -217,8 +210,8 @@ $(document).ready(function () {
             <td>${item.lastName}</td>
             <td>${item.age}</td>
             <td>${item.score}</td>
-            <td><i data-entry-id=${item.id} class="fa-solid fa-pencil" style="cursor: pointer;"></i></td>
-            <td><i data-entry-id=${item.id} class="fas fa-times" style="cursor: pointer;"></i></td>
+            <td><i data-id="${item.id}" class="fa-solid fa-pencil" style="cursor: pointer;"></i></td>
+            <td><i data-id="${item.id}" class="fas fa-times" style="cursor: pointer;"></i></td>
         </tr>
         `;
             $('#table').append(newRow);
@@ -233,76 +226,76 @@ $(document).ready(function () {
     }
 
     $('#form').submit(function (event) {
-        event.preventDefault(); // Prevent the form from submitting in the traditional way
-
+        event.preventDefault();
         const firstName = $('#firstName').val();
         const lastName = $('#lastName').val();
         const age = $('#age').val();
         const score = $('#score').val();
 
-        if (validateInput(firstName, lastName, age, score)) {
-            sendTableDataToServer(new TableData(firstName, lastName, age, score));
-            $('#form')[0].reset();
-            $('#submit').prop('disabled', true);
-        } else {
-            alert("Minimum age is 18. Score is between 1 and 100.");
+        if (!validateInput(firstName, lastName, age, score)) {
+            alert("Minimum age is 18. Score must be between 1 and 100.");
+            return;
         }
+
+        if (currentEditId != null) {
+            updateData(new TableData(firstName, lastName, age, score), currentEditId);
+            currentEditId = null;
+        } else {
+            sendTableDataToServer(new TableData(firstName, lastName, age, score));
+        }
+
+        $('#form')[0].reset();
+        $('#submit').prop('disabled', true);
     });
 
     $('#table').on('click', '.fa-times', function () {
-        const id = $(this).data('entry-id');
+        const id = $(this).data('id');
         deleteSpecificDataFromServer(id);
     });
 
     $('#table').on('click', '.fa-pencil', function () {
-        currentEditId = $(this).data('entry-id');
-        $('#editForm').removeClass('hidden');
-        $('#overlay').removeClass('hidden');
-        $('#editForm').addClass('editFormPossition');
-    });
-
-    $('#editForm').submit(function (event) {
+        currentEditId = $(this).data('id');
         const currentData = tableData.find(data => data.id === currentEditId);
-
-        event.preventDefault();
-        $('#editForm').addClass('hidden');
-        $('#overlay').addClass('hidden');
-        $('#editForm').removeClass('editFormPossition');
-
-        let firstName = $('#editFirstName').val();
-        let lastName = $('#editLastName').val();
-        let age = $('#editAge').val();
-        let score = $('#editScore').val();
-
-        if (firstName == '' && lastName == '' && age == '' && score == '') {
-            return;
-        }
-
-        firstName = firstName !== '' ? firstName : currentData.firstName;
-        lastName = lastName !== '' ? lastName : currentData.lastName;
-        age = age !== '' ? age : currentData.age;
-        score = score !== '' ? score : currentData.score;
-
-        if (!validateInput(firstName, lastName, age, score)) {
-            alert("Minimum age is 18. Score is between 1 and 100.");
-            $('#editForm')[0].reset();
-            return;
-        }
-
-        const editData = new TableData(firstName, lastName, age, score);
-        $('#editForm')[0].reset();
-        updateData(editData, currentEditId);
+        $('#firstName').val(currentData.firstName);
+        $('#lastName').val(currentData.lastName);
+        $('#age').val(currentData.age);
+        $('#score').val(currentData.score);
     });
 
     $('#editCancel').click(function (event) {
+        $('#firstName').val('')
+        $('#lastName').val('');
+        $('#age').val('');
+        $('#score').val('');
         event.preventDefault();
-        $('#editForm').addClass('hidden');
-        $('#overlay').addClass('hidden');
-        $('#editForm').removeClass('editFormPossition');
+    });
+
+    $('#goToPage').on('click', function () {
+        let page = parseInt($('#pageInput').val());
+        if (page >= 1 && page <= Math.ceil(totalCount / limit)) {
+            fetchDataFromServer(page, currentSortBy);
+        } else {
+            alert(`Please enter a page number between 1 and ${Math.ceil(totalCount / limit)}.`);
+        }
+    });
+
+    $('#pageInput').keypress(function (e) {
+        if (e.which === 13) {  // Enter key pressed
+            $('#goToPage').click();
+        }
+    });
+
+    $('#prevPage').click(function () {
+        fetchDataFromServer(currentPage - 1);
+    });
+
+    $('#nextPage').click(function () {
+        fetchDataFromServer(currentPage + 1);
     });
 
     $('#loadTable').click(function () {
-        updateTableDataFromServer();
+        currentSortBy = '';
+        fetchDataFromServer(1);
     });
 
     $('#clearTable').click(function () {
@@ -310,10 +303,38 @@ $(document).ready(function () {
     });
 
     $('#sortByAge').click(function () {
-        fetchSortedData('age');
+        fetchDataFromServer(1, 'age');
     });
 
     $('#sortByScore').click(function () {
-        fetchSortedData('score');
+        fetchDataFromServer(1, 'score');
+    });
+
+    $('#downloadCsvButton').on('click', function () {
+        let url = 'http://localhost:3000/download/csv';
+        if (currentSortBy) {
+            url += `?sortBy=${currentSortBy}`;
+        }
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                const blob = new Blob([data], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'data.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
     });
 });

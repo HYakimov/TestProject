@@ -7,7 +7,6 @@ body {
     padding: 0;
     height: 100vh;
     overflow-y: auto;
-    /* Enable vertical scrolling for the entire page */
 }
 
 .container {
@@ -22,28 +21,24 @@ body {
 }
 
 form,
-edit-form,
 .table-container {
     margin: 10px;
     padding: 20px;
     border-radius: 15px;
     width: 45%;
     max-width: 400px;
-    max-height: 420px;
+    max-height: 560px;
     overflow-y: auto;
     overflow-x: hidden;
     background-color: rgba(253, 253, 253, 0.6);
     box-shadow: 0 0 10px hsla(235, 88%, 65%, 0.2);
     backdrop-filter: blur(15px);
-    /* Blur effect for a frosted glass look */
     transition: box-shadow 0.3s ease;
 }
 
 form:hover,
-edit-form:hover,
 .table-container:hover {
     box-shadow: 0 0 20px rgba(114, 61, 240, 0.8);
-    /* Glow effect on hover */
 }
 
 h2 {
@@ -52,20 +47,17 @@ h2 {
 }
 
 form div,
-edit-form div,
 .table-container div {
     margin-bottom: 15px;
     width: 100%;
 }
 
-form label,
-edit-form label {
+form label {
     display: block;
     margin-bottom: 5px;
 }
 
-form input,
-edit-form input {
+form input {
     width: calc(100% - 20px);
     padding: 10px;
     border: 1px solid #ccc;
@@ -74,8 +66,7 @@ edit-form input {
     transition: border-color 0.3s ease;
 }
 
-form input:focus,
-edit-form input:focus {
+form input:focus {
     border-color: #007bff;
     outline: none;
 }
@@ -102,8 +93,7 @@ table {
     border-radius: 15px;
 }
 
-th,
-td {
+th, td {
     border-radius: 5px;
     padding: 8px;
     text-align: left;
@@ -129,11 +119,16 @@ th {
     justify-content: space-between;
 }
 
+.download-btn-container {
+    display: flex;
+    flex-direction: row;
+}
+
 .table-button {
     margin-right: 5px;
 }
 
-.table-wrapper {    
+.table-wrapper {
     max-height: 320px;
     overflow-y: auto;
 }
@@ -144,30 +139,40 @@ th {
     align-items: center;
 }
 
-.hidden {
-    display: none;
-}
-
-.editFormPossition {
-    position: fixed;
-    top: 20px;
-    left: 250px;
-    width: 100%;
-    height: 100%;
-    z-index: 1001;
-}
-
-#overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-
 button[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.pagination {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pagination-number,
+.pagination-button {
+    font-size: 20px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.pagination-number:hover,
+.pagination-button:not(.disabled):hover {
+    background: #ffffff8f;
+}
+
+.pagination-number.active {
+    color: #fff;
+    background: #0085b6;
+}
+
+#pageInput {
+    width: 50px;
+}
+
+.hidden {
+    display: none;
 }
