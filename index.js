@@ -15,7 +15,7 @@ $(document).ready(function () {
     }
 
     const tableLoader = $('#tableLoader')[0];
-    const limit = 3;
+    const limit = 4;
     let totalCount = 0;
     let currentPage = 1;
     let tableData = [];
@@ -59,7 +59,7 @@ $(document).ready(function () {
             url += `&sortBy=${sortBy}`;
             currentSortBy = sortBy;
         } else if (currentSortBy) {
-            url += `&sortBy=${currentSortBy}`;  // Use current sorting criteria if available
+            url += `&sortBy=${currentSortBy}`;
         }
 
         fetch(url)
@@ -243,7 +243,7 @@ $(document).ready(function () {
         } else {
             sendTableDataToServer(new TableData(firstName, lastName, age, score));
         }
-        
+
         $('#form')[0].reset();
         $('#submit').prop('disabled', true);
     });
@@ -308,5 +308,33 @@ $(document).ready(function () {
 
     $('#sortByScore').click(function () {
         fetchDataFromServer(1, 'score');
+    });
+
+    $('#downloadCsvButton').on('click', function () {
+        let url = 'http://localhost:3000/download/csv';
+        if (currentSortBy) {
+            url += `?sortBy=${currentSortBy}`;
+        }
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                const blob = new Blob([data], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'data.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
     });
 });
